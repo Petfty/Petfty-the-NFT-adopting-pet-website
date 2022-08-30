@@ -22,14 +22,18 @@ const DescSchema = new mongoose.Schema(
       type: Boolean,
       required: true,
     },
+    isAdopted: {
+      type: Boolean,
+      required: true,
+    },
     vaccinationDate: {
       type: String,
     },
-    registeredAccount: {
+    registeredId: {
       type: String,
       required: true,
     },
-    registeredUsername: {
+    registeredAddress: {
       type: String,
       required: true,
     },
@@ -41,9 +45,13 @@ const DescSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const PetSchema = new mongoose.Schema(
+const TokenSchema = new mongoose.Schema(
   {
-    userId: {
+    ownerId: {
+      type: String,
+      required: true,
+    },
+    ownerAddress: {
       type: String,
       required: true,
     },
@@ -61,9 +69,10 @@ const PetSchema = new mongoose.Schema(
     },
     img: {
       type: String,
+      required: true,
     },
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Pet", PetSchema);
+module.exports = mongoose.model("Token", TokenSchema);

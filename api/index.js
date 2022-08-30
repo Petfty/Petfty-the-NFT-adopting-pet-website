@@ -5,7 +5,8 @@ const dotenv = require("dotenv");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const authRoute = require("./routes/auth");
-const petsRoute = require("./routes/pets");
+const tokensRoute = require("./routes/tokens");
+const usersRoute = require("./routes/users");
 
 dotenv.config();
 
@@ -23,7 +24,8 @@ app.use(helmet());
 app.use(morgan("common"));
 
 app.use("/api/auth", authRoute);
-app.use("/api/pets", petsRoute);
+app.use("/api/tokens", tokensRoute);
+app.use("/api/users", usersRoute);
 
 app.listen(8080, () => {
 	console.log("Backend server is running!");

@@ -9,7 +9,7 @@ const UserSchema = new mongoose.Schema(
       max: 20,
       unique: true,
     },
-    address: {
+    walletAddress: {
       type: String,
       required: true,
       unique: true,
@@ -26,7 +26,7 @@ const UserSchema = new mongoose.Schema(
       type: String,
       max: 50,
     },
-    pets: {
+    tokens: {
       type: Array,
       default: [],
     },

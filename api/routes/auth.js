@@ -3,14 +3,14 @@ const User = require("../models/User");
 
 //REGISTER
 router.post("/register", async (req, res) => {
-	console.log(req.body);
 	try{
 		// create new users
 		const newUser = new User({
 			username: req.body.username,
-			address: req.body.address,
+			walletAddress: req.body.walletAddress,
 		});
-		
+		console.log(newUser);
+
 		// save user and respond
 		const user = await newUser.save();
 		res.status(200).json(user);
@@ -22,8 +22,8 @@ router.post("/register", async (req, res) => {
 //LOGIN
 router.post("/login", async (req, res) => {
 	try {
-		const address = await User.findOne({ address: req.body.address });
-		!address && res.status(404).json("user not found");
+		const walletAddress = await User.findOne({ walletAddress: req.body.walletAddress });
+		!walletAddress && res.status(404).json("user not found");
 
 		res.status(200).json("Login Success");
 	} catch (err) {
