@@ -15,11 +15,14 @@ router.get("/createTokenURL", async (req, res) => {
 
 		// execute contract
 		const functionJson = '{ "constant": false, "inputs": [ { "name": "to", "type": "address" }, { "name": "tokenId", "type": "uint256" }, { "name": "tokenURI", "type": "string" } ], "name": "mintWithTokenURI", "outputs": [ { "name": "", "type": "bool" } ], "payable": false, "stateMutability": "nonpayable", "type": "function" }';
-		const request_key = API.executeContract(process.env.NFT_CONTRACT_ADDRESS, functionJson, "0", `["${req.toAddress}", "${req.tokenId}", "${metadataURL}"]`);
-		
+		const request_key = API.executeContract(process.env.NFT_CONTRACT_ADDRESS, functionJson, "0", `["${req.body.toAddress}", "${req.body.tokenId}", "${metadataURL}"]`);
+		if (!request_key) {
+			res.status(404).json("failed to execute contract");
+		}
+
 		// response to client
 		if (req.body.isMobile === true) {
-			res.status(200).json({url: process.env.MB_URL, request_key: request_key});
+			res.status(200).json({url: process.env.MB_URL, request_key: request_key, err: metadataURL});
 		} else {
 			res.status(200).json({url: process.env.QR_URL, request_key: request_key});
 		}
