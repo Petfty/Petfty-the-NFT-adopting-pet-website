@@ -63,6 +63,11 @@ const TokenSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    isOnSale: {
+      type: Boolean,
+      required: true,
+      defalut: false,
+    },
     desc: {
       type: DescSchema,
       required: true,

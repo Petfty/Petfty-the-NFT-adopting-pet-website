@@ -1,8 +1,19 @@
 const axios = require("axios");
+const Caver = require("caver-js");
 const dotenv = require("dotenv");
 dotenv.config();
 
-const option = {
+const option_CAVER = {
+	headers: [
+	  {
+		name: "Authorization",
+		value: process.env.AUTH,
+	  },
+	  {name: "x-chain-id", value: process.env.CHAIN_ID}
+	]
+};
+
+const option_KAS = {
 	headers: {
 		Authorization: process.env.AUTH,
 		"x-chain-id": process.env.CHAIN_ID,
@@ -10,7 +21,15 @@ const option = {
 	}
 };
 
+const caver = new Caver(new Caver.providers.HttpProvider("https://node-api.klaytnapi.com/v1/klaytn", option_CAVER));
+const NFTContract = new caver.contract(KIP17ABI, process.env.NFT_CONTRACT_ADDRESS);
+
 module.exports = {
+	// =======================  CAVER API  ========================
+	
+
+
+
 	// =======================  KAS API ========================
 	uploadMetaData: async (description, name, imageUrl) => {
 		const _description = description;
@@ -25,7 +44,7 @@ module.exports = {
 		}
 
 		try {
-			const response = await axios.post("https://metadata-api.klaytnapi.com/v1/metadata", metadata, option);
+			const response = await axios.post("https://metadata-api.klaytnapi.com/v1/metadata", metadata, option_KAS);
 			// console.log(`${JSON.stringify(response.data)}`);
 			return response.data.uri;
 		} catch(e) {
@@ -50,13 +69,10 @@ module.exports = {
 					params: params
 				},
 			});
-			const { request_key } = await response.data;
-			console.log(response)
-			return request_key;
+			return response.data.request_key;
 		} catch (err) {
 			console.log(err);
 			return false;
 		} 
-		
 	}
 }
