@@ -1,6 +1,32 @@
 const router = require("express").Router();
+const axios = require("axios");
+const API = require("../KlaytnAPI/API");
 const Token = require("../models/Token");
 const User = require("../models/User");
+
+// get create token URL
+router.get("/createTokenURL", async (req, res) => {
+	try {
+		// upload metadata
+		const metadataURL = await API.uploadMetaData(req.body, req.body.desc.name, req.body.img);
+		if (!metadataURL) {
+			res.status(404).json("failed to upload metadata");
+		}
+
+		// execute contract
+		const functionJson = '{ "constant": false, "inputs": [ { "name": "to", "type": "address" }, { "name": "tokenId", "type": "uint256" }, { "name": "tokenURI", "type": "string" } ], "name": "mintWithTokenURI", "outputs": [ { "name": "", "type": "bool" } ], "payable": false, "stateMutability": "nonpayable", "type": "function" }';
+		const request_key = API.executeContract(process.env.NFT_CONTRACT_ADDRESS, functionJson, "0", `["${req.toAddress}", "${req.tokenId}", "${metadataURL}"]`);
+		
+		// response to client
+		if (req.body.isMobile === true) {
+			res.status(200).json({url: process.env.MB_URL, request_key: request_key});
+		} else {
+			res.status(200).json({url: process.env.QR_URL, request_key: request_key});
+		}
+	} catch (err) {
+		res.status(500).json(err);
+	}
+})
 
 // create a Token
 router.post("/", async (req, res) => {

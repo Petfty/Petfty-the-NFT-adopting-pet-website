@@ -7,6 +7,7 @@ const morgan = require("morgan");
 const authRoute = require("./routes/auth");
 const tokensRoute = require("./routes/tokens");
 const usersRoute = require("./routes/users");
+const klipRoute = require("./routes/klip");
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ app.use(morgan("common"));
 app.use("/api/auth", authRoute);
 app.use("/api/tokens", tokensRoute);
 app.use("/api/users", usersRoute);
+app.use("/api/klip", klipRoute);
 
 app.listen(8080, () => {
 	console.log("Backend server is running!");
