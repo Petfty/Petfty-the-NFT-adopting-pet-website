@@ -32,7 +32,7 @@ router.get("/createTokenURL", async (req, res) => {
 })
 
 // create a Token
-router.post("/", async (req, res) => {
+router.post("/createToken", async (req, res) => {
 	const newToken = new Token(req.body);
 	try {
 		const savedToken = await newToken.save();
@@ -78,6 +78,44 @@ router.put("/saleToken/:id", async (req, res) => {
 	}
 })
 
+
+// get adopt token URL
+router.get("/purchaseTokenURL", async (req, res) => {
+	try {
+		// execute contract
+		const functionJson = '{ "constant": false, "inputs": [ { "name": "tokenId", "type": "uint256" }, { "name": "NFTAddress", "type": "address" } ], "name": "buyNFT", "outputs": [ { "name": "", "type": "bool" } ], "payable": true, "stateMutability": "payable", "type": "function" }';
+		const request_key = await API.executeContract(process.env.MARKET_CONTRACT_ADDRESS, functionJson, "10000000000000000", `["${req.body.tokenId}", "${process.env.NFT_CONTRACT_ADDRESS}"]`);
+		if (!request_key) {
+			res.status(404).json("failed to execute contract");
+		}
+
+		// response to client
+		if (req.body.isMobile === true) {
+			res.status(200).json({url: process.env.MB_URL, request_key: request_key});
+		} else {
+			res.status(200).json({url: process.env.QR_URL, request_key: request_key});
+		}
+	} catch(err) {
+		res.status(500).json(err);
+	}
+})
+
+// update adopt status
+router.put("/purchaseToken", async (req, res) => {
+	try {
+		const token = await Token.findById(req.params.id);
+		if (token.ownerId === req.body.ownerId) {
+			await token.updateOne({ $set : {'desc.isAdopted': req.body.desc.isAdopted} });
+			res.status(200).json("the token has been updated");
+		} else {
+			res.status(403).json("you can update only your token");
+		}
+	} catch (err) {
+		res.status(500).json(err);
+	}
+});
+
+
 // delete a Token
 router.delete("/:id", async (req, res) => {
 	try {
@@ -93,9 +131,10 @@ router.delete("/:id", async (req, res) => {
 	}
 })
 
-// get all Token
+// get all Token on Market
 router.get("/all", async (req, res) => {
 	try {
+		const nfts = await API.getNFTs(process.env.MARKET_CONTRACT_ADDRESS);
 		const tokens = await Token.find({});
 		res.status(200).json(tokens);
 	} catch (err) {
@@ -103,7 +142,7 @@ router.get("/all", async (req, res) => {
 	}
 })
 
-// get a Token
+// get a Token on Market
 router.get("/:id", async (req, res) => {
 	try {
 		const currentToken = await Token.findById(req.params.id);
@@ -117,26 +156,11 @@ router.get("/:id", async (req, res) => {
 router.get("/profile/:id", async (req, res) => {
 	try {
 		const user = await User.findOne({ _id: req.params.id })
-		const token = await Token.find({ ownerId: user._id})
-		res.status(200).json(token)
+		res.status(200).json(user)
 	} catch (err) {
 		res.status(500).json(err);
 	}
 });
 
-// adopt Token
-router.put("/:id", async (req, res) => {
-	try {
-		const token = await Token.findById(req.params.id);
-		if (token.ownerId === req.body.ownerId) {
-			await token.updateOne({ $set : {'desc.isAdopted': req.body.desc.isAdopted} });
-			res.status(200).json("the token has been updated");
-		} else {
-			res.status(403).json("you can update only your token");
-		}
-	} catch (err) {
-		res.status(500).json(err);
-	}
-});
 
 module.exports = router

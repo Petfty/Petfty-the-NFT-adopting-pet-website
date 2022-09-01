@@ -1,5 +1,6 @@
 const axios = require("axios");
 const Caver = require("caver-js");
+const KIP17ABI = require("./ABI.json");
 const dotenv = require("dotenv");
 dotenv.config();
 
@@ -26,8 +27,36 @@ const NFTContract = new caver.contract(KIP17ABI, process.env.NFT_CONTRACT_ADDRES
 
 module.exports = {
 	// =======================  CAVER API  ========================
-	
+	getNFTs: async (address) => {
+		//Fetch Balance
+		const balance = await NFTContract.methods.balanceOf(address).call();
+		console.log(`[NFT Balance] ${balance}: ${address}`);
+		//Fetch TokenIds
+		const tokenIds = [];
+		for (let i = 0; i < balance; i++) {
+			const id = await NFTContract.methods.tokenOfOwnerByIndex(address, i).call();
+			tokenIds.push(id);
+		}
+		//Fetch TokenURIs
+		const tokenURIs = [];
+		for (let i = 0; i < balance; i++) {
+			const uri = await NFTContract.methods.tokenURI(tokenIds[i]).call(); // metadata kas 주소
+			tokenURIs.push(uri);
+		}
+		const nfts = [];
+		for (let i = 0; i < balance; i++) {
+			nfts.push({ uri: tokenURIs[i], id: tokenIds[i] });
+		}
+		return (nfts);
+	},
 
+	getBalance: (address) => {
+		return caver.rpc.klay.getBalance(address).then((response) => {
+			const balance = caver.utils.convertFromPeb(caver.utils.hexToNumberString(response));
+			console.log(`BALANCE: ${balance}`);
+			return (balance);
+		})
+	},
 
 
 	// =======================  KAS API ========================
