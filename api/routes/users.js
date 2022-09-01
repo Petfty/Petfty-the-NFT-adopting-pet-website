@@ -2,8 +2,8 @@ const router = require("express").Router();
 const User = require("../models/User");
 
 // update user
-router.put("/:id", async (req, res) => {
-	if (req.body.userId === req.params.id || req.body.isAdmin) {
+router.put("/:walletAddress", async (req, res) => {
+	if (req.body.walletAddress === req.params.walletAddress || req.body.isAdmin) {
 		try {
 			const user = await User.findByIdAndUpdate(req.params.id, {
 				$set: req.body,
@@ -18,10 +18,10 @@ router.put("/:id", async (req, res) => {
 })
 
 // delete user
-router.delete("/:id", async (req, res) => {
-	if (req.body.userId === req.params.id || req.body.isAdmin) {
+router.delete("/:walletAddress", async (req, res) => {
+	if (req.body.walletAddress === req.params.walletAddress || req.body.isAdmin) {
 		try {
-			const user = await User.findByIdAndDelete(req.params.id);
+			const user = await User.findOneAndDelete({"walletAddress": req.body.walletAddress})
 			res.status(200).json("Account has been deleted")
 		} catch (err) {
 			return res.status(500).json(err);
@@ -33,11 +33,11 @@ router.delete("/:id", async (req, res) => {
 
 // get a user
 router.get("/", async (req, res) => {
-	const userId = req.query.userId;
+	const userwalletaddress = req.query.walletAddress;
 	const username = req.query.username;
 	try {
-		const user = userId
-		 ? await User.findById(userId)
+		const user = userwalletaddress
+		 ? await User.findOne({walletAddress: userwalletaddress})
 		 : await User.findOne({username: username})
 		const {updatedAt, ...other} = user._doc
 		res.status(200).json(other);

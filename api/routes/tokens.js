@@ -4,6 +4,19 @@ const API = require("../KlaytnAPI/API");
 const Token = require("../models/Token");
 const User = require("../models/User");
 
+const isOwnersToken = async (address, tokenId) => {
+	var isInclude = false
+	const nfts = await API.getNFTs(address);
+	for (var i = 0; i < (nfts).length; i++) {
+		if (nfts[i].id !== tokenId) {
+			continue ;
+		} else {
+			isInclude = true;
+		}
+	}
+	return isInclude;
+}
+
 // get create token URL
 router.get("/createTokenURL", async (req, res) => {
 	try {
@@ -64,10 +77,10 @@ router.get("/saleTokenURL", async (req, res) => {
 });
 
 // update sale status
-router.put("/saleToken/:id", async (req, res) => {
+router.put("/saleToken/:tokenId", async (req, res) => {
 	try {
-		const token = await Token.findById(req.params.id);
-		if (token.ownerId === req.body.ownerId && token.tokenId === req.body.tokenId) {
+		const token = await Token.findOne({tokenId: req.body.tokenId});
+		if (token.ownerAddress === req.body.walletAddress) {
 			await token.updateOne({ $set: req.body });
 			res.status(200).json("the token is on market");
 		} else {
@@ -101,36 +114,46 @@ router.get("/purchaseTokenURL", async (req, res) => {
 })
 
 // update adopt status
-router.put("/purchaseToken", async (req, res) => {
+router.put("/purchaseToken/:tokenId", async (req, res) => {
 	try {
-		const token = await Token.findById(req.params.id);
-		if (token.ownerId === req.body.ownerId) {
+		const token = await Token.findOne({tokenId: req.params.tokenId});
+		if (token.tokenId === req.body.tokenId)
+		{
 			await token.updateOne({ $set : {'desc.isAdopted': req.body.desc.isAdopted} });
 			res.status(200).json("the token has been updated");
 		} else {
-			res.status(403).json("you can update only your token");
+			res.status(403).json("the tokenId is not right");
 		}
+		
 	} catch (err) {
 		res.status(500).json(err);
 	}
 });
 
 // get burn a Token URL
-router.get("/burnTokenURL", async (res, req) => {
+router.get("/burnTokenURL", async (req, res) => {
 	try {
-		// execute contract
-		const functionJson = '{ "constant": false, "inputs": [ { "name": "from", "type": "address" }, { "name": "to", "type": "address" }, { "name": "tokenId", "type": "uint256" } ], "name": "safeTransferFrom", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }';
-		const request_key = await API.executeContract(process.env.NFT_CONTRACT_ADDRESS, functionJson, "0", `["${"0x0000000000000000000000000000000000000000"}", "${process.env.MARKET_CONTRACT_ADDRESS}", "${req.body.tokenId}"]`);
-		if (!request_key) {
-			res.status(403).json("failed to execute burn token contract")
+		// check token is owner's
+		const isInclude = await isOwnersToken(req.body.walletAddress, req.body.tokenId);
+
+		if (isInclude) {
+			// execute contract
+			const functionJson = '{ "constant": false, "inputs": [ { "name": "from", "type": "address" }, { "name": "to", "type": "address" }, { "name": "tokenId", "type": "uint256" } ], "name": "safeTransferFrom", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }';
+			const request_key = await API.executeContract(process.env.NFT_CONTRACT_ADDRESS, functionJson, "0", `["${req.body.walletAddress}", "0x0000000000000000000000000000000000000000", "${req.body.tokenId}"]`);
+			if (!request_key) {
+				res.status(403).json("failed to execute burn token contract")
+			}
+
+			// response to client
+			if (req.body.isMobile === true) {
+				res.status(200).json({url: process.env.MB_URL, request_key: request_key});
+			} else {
+				res.status(200).json({url: process.env.QR_URL, request_key: request_key});
+			}
+		} else {
+			res.status(403).json("you can only burn your own token");
 		}
 
-		// response to client
-		if (req.body.isMobile === true) {
-			res.status(200).json({url: process.env.MB_URL, request_key: request_key});
-		} else {
-			res.status(200).json({url: process.env.QR_URL, request_key: request_key});
-		}
 	} catch (err) {
 		req.status(500).json(err);
 	}
@@ -138,10 +161,13 @@ router.get("/burnTokenURL", async (res, req) => {
 
 
 // delete a Token
-router.delete("/burnToken/:id", async (req, res) => {
+router.delete("/burnToken/:tokenId", async (req, res) => {
 	try {
-		const currentToken = await Token.findById(req.params.id);
-		if (currentToken.ownerId === req.body.ownerId) {
+		// check token is owner's
+		const isInclude = await isOwnersToken(req.body.walletAddress, req.body.tokenId);
+		const currentToken = await Token.findOne({tokenId: req.params.tokenId});
+
+		if (isInclude && currentToken.tokenId === req.body.tokenId) {
 			await currentToken.deleteOne({ $set: req.body });
 			res.status(200).json("the Token has been delete");
 		} else {
@@ -163,29 +189,39 @@ router.get("/info/all", async (req, res) => {
 })
 
 // get user's Token on Market
-router.get("/info/:userid", async (req, res) => {
+router.get("/info/:walletAddress", async (req, res) => {
 	try {
-		const currentUser = await User.findById(req.params.userid);
-		if (currentUser.walletAddress == req.body.walletAddress) {
+		const balance = await API.getBalance(req.body.walletAddress);
+		const currentUser = await User.findOne({walletAddress: req.params.walletAddress});
+		if (currentUser.walletAddress == req.body.walletAddress && balance > 0) {
 			const nfts = API.getNFTs(currentUser.walletAddress);
 			res.status(200).json(nfts);
 		} else {
-			res.status(403).json("you can delete only your Token");
+			res.status(403).json("you can access only your Token");
 		}
-	} catch (err) {
-		res.status(500).json(err);
-	}
-})
-
-// get a token
-router.get("/info/:id", async (req, res) => {
-	try {
-		const token = await Token.findOne({ _id: req.params.id })
-		res.status(200).json(user)
 	} catch (err) {
 		res.status(500).json(err);
 	}
 });
 
+// get a token
+router.get("/info/:tokenId", async (req, res) => {
+	try {
+		if (req.body.tokenId === req.params.tokenId) {
+			const nfts = API.getNFTs(req.body.walletAddress);
+			for (var i = 0; i < nfts.length; i++) {
+				if (nfts[i].id === req.body.tokenId) {
+					break;
+				}
+			}
+			res.status(200).json(nfts[i]);
+		}
+		else {
+			res.status(403).json("you can access only your Token")
+		}
+	} catch (err) {
+		res.status(500).json(err);
+	}
+});
 
 module.exports = router
