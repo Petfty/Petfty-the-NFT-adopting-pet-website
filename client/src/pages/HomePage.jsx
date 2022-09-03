@@ -16,13 +16,13 @@ import Tokens from "../components/Tokens";
 //   top: 0;
 // `;
 
-export default function HomePage() {
-  const [myAddress, setMyAddress] = useState("0x00000000000000000000");
-  const [myBalance, setBalance] = useState(0);
+export default function HomePage(props) {
+  const { myAddress, myBalance, user, setMyAddress, setBalance, setUser } = props;
+  
   return (
     <>
       <TopBar myAddress={myAddress} myBalance={myBalance}/>
-      <QR setMyAddress={setMyAddress}/>
+      <QR setMyAddress={setMyAddress} setBalance={setBalance} setUser={setUser} user={user}/>
       <Tokens />
     </>
   );

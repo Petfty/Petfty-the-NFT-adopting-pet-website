@@ -1,7 +1,12 @@
 import React from 'react'
+import TopBar from '../components/TopBar'
 
-export default function RegisterPage() {
+export default function RegisterPage(props) {
+  const { myAddress } = props;
   return (
-	<div>RegisterPage</div>
+    <>
+      <TopBar myAddress={myAddress}/>
+    </>
+    
   )
 }

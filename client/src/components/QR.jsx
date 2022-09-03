@@ -1,4 +1,7 @@
-import { React, useState } from "react";
+import { React, useState, useContext, useRef } from "react";
+import { Link } from "react-router-dom";
+import { loginCall } from "../apiCalls";
+import { AuthContext } from "../context/AuthContext";
 import styled from "styled-components";
 import QRCode from "qrcode.react";
 import axios from "axios";
@@ -25,14 +28,14 @@ const QRCodeContainer = styled.div`
 `;
 
 const QRLeftBar = styled.div`
-  flex:3;
+  flex: 3;
   display: flex;
   justify-content: center;
   align-items: center;
 `;
 
 const QRRigntBar = styled.div`
-  flex:3;
+  flex: 3;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -40,25 +43,63 @@ const QRRigntBar = styled.div`
 
 const LoginButton = styled.div`
   border: none;
-	padding: 7px;
-	border-radius: 5px;
-	background-color: #803333;
-	font-weight: 500;
-	margin-right: 20px;
-	cursor: pointer;
-	color: white;
+  padding: 7px;
+  border-radius: 5px;
+  background-color: #803333;
+  font-weight: 500;
+  margin-right: 20px;
+  cursor: pointer;
+  color: white;
+`;
+
+// const RegisterButton = styled.div`
+//   border: none;
+//   padding: 7px;
+//   border-radius: 5px;
+//   background-color: #803333;
+//   font-weight: 500;
+//   margin-right: 20px;
+//   cursor: pointer;
+//   color: white;
+// `;
+
+const RegisterButton = styled(Link)`
+	border: none;
+  padding: 7px;
+  border-radius: 5px;
+  background-color: #803333;
+  font-weight: 500;
+  margin-right: 20px;
+  cursor: pointer;
+  color: white;
 `;
 
 const DEFAULT_QR_CODE = "DEFAULT";
 
 export default function QR(props) {
-  const { setMyAddress } = props;
+  const { setMyAddress, setMyBalance, setUser, user } = props;
   const [qrvalue, setQrvalue] = useState(DEFAULT_QR_CODE);
+
+  const Login = (walletAddress, callback) => {
+    try {
+      axios
+        .post("/auth/login", { walletAddress: walletAddress })
+        .then((res) => {
+          setUser(walletAddress);
+          callback(true);
+        })
+        .catch((err) => {
+          callback(false);
+        });
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   const LoginQR = (callback) => {
     let request_key = null;
     try {
-      axios.get("/auth/connectURL", {isMobile: false}).then((res) => {
+      axios.get("/auth/connectURL", { isMobile: false }).then((res) => {
         setQrvalue(res.data.url + res.data.request_key);
         request_key = res.data.request_key;
         let timeId = setInterval(() => {
@@ -69,31 +110,48 @@ export default function QR(props) {
             .then((res) => {
               if (res.data.result) {
                 console.log(`[result] ${JSON.stringify(res.data.result)}`);
-                callback(res.data.result.klaytn_address);
                 clearInterval(timeId);
                 setQrvalue("DEFAULT");
                 setMyAddress(res.data.result.klaytn_address);
+                callback(res.data.result.klaytn_address);
               }
             });
         }, 1000);
-      })
+      });
     } catch (err) {
-      console.log(err.response.data)
+      console.log(err.response.data);
     }
   };
 
   return (
     <QRContainer>
-      <QRLeftBar>
-
-      </QRLeftBar>
+      <QRLeftBar></QRLeftBar>
       <QRCodeContainer>
         <QRCode value={qrvalue} size={256} style={{ margin: "auto" }} />
       </QRCodeContainer>
       <QRRigntBar>
-        <LoginButton onClick={()=> {LoginQR((result)=> {alert(JSON.stringify(result));})}}>
-          Login
-        </LoginButton>
+        {user ? null : (
+          <>
+            <LoginButton
+              onClick={() => {
+                LoginQR((address) => {
+                  Login(address, (isRegistered) => {
+                    if (isRegistered) {
+                      alert("Login Successful");
+                    } else {
+                      alert("You need to Register first");
+                    }
+                  });
+                });
+              }}
+            >
+              Login
+            </LoginButton>
+            <RegisterButton to="/register" style={{textDecoration:"none"}}>
+              Register
+            </RegisterButton>
+          </>
+        )}
       </QRRigntBar>
     </QRContainer>
   );

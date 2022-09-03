@@ -2,7 +2,6 @@ import React from "react";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { Link } from "react-router-dom";
-import QR from "./QR";
 import styled from "styled-components";
 
 const TopBarContainer = styled.div`
@@ -65,7 +64,7 @@ export default function TopBar(props) {
   return (
     <TopBarContainer>
       <TopBarLeft>
-        Address: {myAddress} <br />
+        Address: {user ? user.walletAddress : myAddress} <br />
         Balance: {myBalance}
       </TopBarLeft>
       <TopBarCenter>
