@@ -6,7 +6,7 @@ import QR from "./QR";
 import styled from "styled-components";
 
 const TopBarContainer = styled.div`
-  height: 50px;
+  height: 80px;
   width: 100%;
   background-color: #00000097;
   display: flex;
@@ -17,7 +17,15 @@ const TopBarContainer = styled.div`
 `;
 
 const TopBarLeft = styled.div`
-  flex: 5;
+  border: none;
+	padding: 5px;
+	border-radius: 5px;
+	background-color: #000000ac;
+	font-weight: 500;
+	margin-left: 20px;
+  margin-right: 50px;
+	color: white;
+  flex: 3.7;
 `;
 
 const TopBarCenter = styled.div`
@@ -52,12 +60,13 @@ const TopBarRight = styled.div`
 // `;
 
 export default function TopBar(props) {
-  const { myAddress } = props;
+  const { myAddress, myBalance } = props;
   const { user } = useContext(AuthContext);
   return (
     <TopBarContainer>
       <TopBarLeft>
-        Address: {myAddress}
+        Address: {myAddress} <br />
+        Balance: {myBalance}
       </TopBarLeft>
       <TopBarCenter>
         <Link to="/" style={{ textDecoration: "none" }}>

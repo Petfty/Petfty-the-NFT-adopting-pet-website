@@ -18,9 +18,10 @@ import Tokens from "../components/Tokens";
 
 export default function HomePage() {
   const [myAddress, setMyAddress] = useState("0x00000000000000000000");
+  const [myBalance, setBalance] = useState(0);
   return (
     <>
-      <TopBar myAddress={myAddress} />
+      <TopBar myAddress={myAddress} myBalance={myBalance}/>
       <QR setMyAddress={setMyAddress}/>
       <Tokens />
     </>

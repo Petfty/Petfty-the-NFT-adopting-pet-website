@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const API = require("../KlaytnAPI/API");
 const User = require("../models/User");
 
 // update user
@@ -41,6 +42,19 @@ router.get("/", async (req, res) => {
 		 : await User.findOne({username: username})
 		const {updatedAt, ...other} = user._doc
 		res.status(200).json(other);
+	} catch (err) {
+		res.status(500).json(err);
+	}
+})
+
+router.get("/balance/:walletAddress", async (req, res) => {
+	try {
+		if (req.body.walletAddress === req.params.walletAddress) {
+			const balance = await API.getBalance(req.body.walletAddress)
+			res.status(200).json(balance);
+		} else {
+			res.status(403).json("You cna only get balance your own account");
+		}
 	} catch (err) {
 		res.status(500).json(err);
 	}
