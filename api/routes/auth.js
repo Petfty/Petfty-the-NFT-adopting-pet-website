@@ -44,9 +44,12 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
 	try {
 		const walletAddress = await User.findOne({ walletAddress: req.body.walletAddress });
-		!walletAddress && res.status(404).json("user not found");
+		if (!walletAddress) {
+			return (res.status(404).json("user not found"));
+		} else {
+			return (res.status(200).json("Login Success"));
+		}
 
-		res.status(200).json("Login Success");
 	} catch (err) {
 		res.status(500).json(err);
 	}
