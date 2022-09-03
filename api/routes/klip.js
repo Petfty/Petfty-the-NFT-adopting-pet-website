@@ -7,13 +7,11 @@ router.get("/result", async (req, res) => {
 	console.log(response.data)
 	if (response.data.result) {
 		console.log(`[result] ${JSON.stringify(response.data.result)}`);
-		res.status(200).json(response.data.result);
+		res.status(200).json(response.data);
 	} else {
 		console.log(response.data.status)
-		res.status(200).json(response.data.status);
+		res.status(200).json(response.data);
 	}
 })
-
-
 
 module.exports = router
