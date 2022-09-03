@@ -77,7 +77,7 @@ const RegisterButton = styled(Link)`
 const DEFAULT_QR_CODE = "DEFAULT";
 
 export default function QR(props) {
-  const { setMyAddress, setMyBalance, setUser, user } = props;
+  const { setMyAddress, setBalance, setUser, user } = props;
   const [qrvalue, setQrvalue] = useState(DEFAULT_QR_CODE);
 
   const Login = (walletAddress, callback) => {
@@ -123,6 +123,21 @@ export default function QR(props) {
     }
   };
 
+  const UpdateBalance = (user) => {
+    try {
+      const jsonUser = {
+        "walletAddress": user
+      }
+      console.log(jsonUser);
+      axios.get("/users/balance/"+user).then((res) => {
+        console.log(res.data);
+        setBalance(res.data);
+      })
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
   return (
     <QRContainer>
       <QRLeftBar></QRLeftBar>
@@ -130,7 +145,9 @@ export default function QR(props) {
         <QRCode value={qrvalue} size={256} style={{ margin: "auto" }} />
       </QRCodeContainer>
       <QRRigntBar>
-        {user ? null : (
+        {user ? <LoginButton onClick={() => {
+          UpdateBalance(user);
+        }}>Update Balace</LoginButton> : (
           <>
             <LoginButton
               onClick={() => {

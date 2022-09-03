@@ -22,11 +22,11 @@ const TopBarLeft = styled.div`
   margin-left: 20px;
   margin-right: 50px;
   color: white;
-  flex: 3.7;
+  flex: 7;
 `;
 
 const TopBarCenter = styled.div`
-  flex: 3;
+  flex: 5;
 `;
 
 const Logo = styled.div`
@@ -38,11 +38,15 @@ const Logo = styled.div`
 `;
 
 const TopBarRight = styled.div`
-  flex: 3;
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
+  border: none;
+  padding: 5px;
+  border-radius: 5px;
+  background-color: #000000ac;
+  font-weight: 500;
+  margin-left: 20px;
+  margin-right: 50px;
   color: white;
+  flex: 3;
 `;
 
 // const Button = styled.div`
@@ -62,8 +66,7 @@ export default function TopBar(props) {
     <TopBarContainer>
       {user ? (
         <TopBarLeft>
-          Address: {myAddress} <br />
-          Balance: {myBalance}
+          Address: {myAddress}
         </TopBarLeft>
       ) : (
         <TopBarLeft>Please Login Or Register</TopBarLeft>
@@ -73,7 +76,10 @@ export default function TopBar(props) {
           <Logo>PETFTY</Logo>
         </Link>
       </TopBarCenter>
-      <TopBarRight />
+      {user ? (<TopBarRight>
+        Balance: {myBalance}
+      </TopBarRight>) : <TopBarRight></TopBarRight>}
+      
     </TopBarContainer>
   );
 }

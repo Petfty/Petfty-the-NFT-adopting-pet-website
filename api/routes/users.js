@@ -49,12 +49,8 @@ router.get("/", async (req, res) => {
 
 router.get("/balance/:walletAddress", async (req, res) => {
 	try {
-		if (req.body.walletAddress === req.params.walletAddress) {
-			const balance = await API.getBalance(req.body.walletAddress)
-			res.status(200).json(balance);
-		} else {
-			res.status(403).json("You cna only get balance your own account");
-		}
+		const balance = await API.getBalance(req.params.walletAddress)
+		res.status(200).json(balance);
 	} catch (err) {
 		res.status(500).json(err);
 	}
