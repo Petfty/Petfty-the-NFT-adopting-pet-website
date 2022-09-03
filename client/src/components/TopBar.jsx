@@ -1,6 +1,4 @@
 import React from "react";
-import { useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 
@@ -17,13 +15,13 @@ const TopBarContainer = styled.div`
 
 const TopBarLeft = styled.div`
   border: none;
-	padding: 5px;
-	border-radius: 5px;
-	background-color: #000000ac;
-	font-weight: 500;
-	margin-left: 20px;
+  padding: 5px;
+  border-radius: 5px;
+  background-color: #000000ac;
+  font-weight: 500;
+  margin-left: 20px;
   margin-right: 50px;
-	color: white;
+  color: white;
   flex: 3.7;
 `;
 
@@ -59,14 +57,17 @@ const TopBarRight = styled.div`
 // `;
 
 export default function TopBar(props) {
-  const { myAddress, myBalance } = props;
-  const { user } = useContext(AuthContext);
+  const { myAddress, myBalance, user } = props;
   return (
     <TopBarContainer>
-      <TopBarLeft>
-        Address: {user ? user.walletAddress : myAddress} <br />
-        Balance: {myBalance}
-      </TopBarLeft>
+      {user ? (
+        <TopBarLeft>
+          Address: {myAddress} <br />
+          Balance: {myBalance}
+        </TopBarLeft>
+      ) : (
+        <TopBarLeft>Please Login Or Register</TopBarLeft>
+      )}
       <TopBarCenter>
         <Link to="/" style={{ textDecoration: "none" }}>
           <Logo>PETFTY</Logo>

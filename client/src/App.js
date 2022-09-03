@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState } from "react";
-import { AuthContext } from "./context/AuthContext";
 import HomePage from "./pages/HomePage";
 import MyPage from "./pages/MyPage";
 import MintPage from "./pages/MintPage";
