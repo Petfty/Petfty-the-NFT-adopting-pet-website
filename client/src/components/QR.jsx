@@ -1,7 +1,6 @@
 import { React, useState, useContext, useRef } from "react";
 import { Link } from "react-router-dom";
-import { loginCall } from "../apiCalls";
-import { AuthContext } from "../context/AuthContext";
+import { useNavigate } from "react-router"
 import styled from "styled-components";
 import QRCode from "qrcode.react";
 import axios from "axios";
@@ -64,7 +63,7 @@ const LoginButton = styled.div`
 // `;
 
 const RegisterButton = styled(Link)`
-	border: none;
+  border: none;
   padding: 7px;
   border-radius: 5px;
   background-color: #803333;
@@ -79,6 +78,7 @@ const DEFAULT_QR_CODE = "DEFAULT";
 export default function QR(props) {
   const { setMyAddress, setBalance, setUser, user } = props;
   const [qrvalue, setQrvalue] = useState(DEFAULT_QR_CODE);
+  const navigate = useNavigate();
 
   const Login = (walletAddress, callback) => {
     try {
@@ -126,28 +126,38 @@ export default function QR(props) {
   const UpdateBalance = (user) => {
     try {
       const jsonUser = {
-        "walletAddress": user
-      }
+        walletAddress: user,
+      };
       console.log(jsonUser);
-      axios.get("/users/balance/"+user).then((res) => {
+      axios.get("/users/balance/" + user).then((res) => {
         console.log(res.data);
         setBalance(res.data);
-      })
+      });
     } catch (err) {
       console.log(err);
     }
-  }
+  };
 
   return (
     <QRContainer>
-      <QRLeftBar></QRLeftBar>
+      <QRLeftBar>
+        {user ? (
+          <LoginButton onClick={() => {navigate("/mint")}}>Make NFT Pet Token</LoginButton>
+        ) : null}
+      </QRLeftBar>
       <QRCodeContainer>
         <QRCode value={qrvalue} size={256} style={{ margin: "auto" }} />
       </QRCodeContainer>
       <QRRigntBar>
-        {user ? <LoginButton onClick={() => {
-          UpdateBalance(user);
-        }}>Update Balace</LoginButton> : (
+        {user ? (
+          <LoginButton
+            onClick={() => {
+              UpdateBalance(user);
+            }}
+          >
+            Update Balace
+          </LoginButton>
+        ) : (
           <>
             <LoginButton
               onClick={() => {
@@ -164,7 +174,7 @@ export default function QR(props) {
             >
               Login
             </LoginButton>
-            <RegisterButton to="/register" style={{textDecoration:"none"}}>
+            <RegisterButton to="/register" style={{ textDecoration: "none" }}>
               Register
             </RegisterButton>
           </>

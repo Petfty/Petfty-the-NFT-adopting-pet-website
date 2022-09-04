@@ -1,6 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
+import { useNavigate } from "react-router"
+
 
 const TopBarContainer = styled.div`
   height: 80px;
@@ -49,25 +51,24 @@ const TopBarRight = styled.div`
   flex: 3;
 `;
 
-// const Button = styled.div`
-//   border: none;
-//   padding: 7px;
-//   border-radius: 5px;
-//   background-color: #000000c4;
-//   font-weight: 500;
-//   margin-right: 20px;
-//   cursor: pointer;
-//   color: white;
-// `;
+const Button = styled.div`
+  border: none;
+  padding: 7px;
+  border-radius: 5px;
+  background-color: #000000c4;
+  font-weight: 500;
+  margin-right: 20px;
+  cursor: pointer;
+  color: white;
+`;
 
 export default function TopBar(props) {
   const { myAddress, myBalance, user } = props;
+  const navigate = useNavigate();
   return (
     <TopBarContainer>
       {user ? (
-        <TopBarLeft>
-          Address: {myAddress}
-        </TopBarLeft>
+        <TopBarLeft>Address: {myAddress}</TopBarLeft>
       ) : (
         <TopBarLeft>Please Login Or Register</TopBarLeft>
       )}
@@ -76,10 +77,14 @@ export default function TopBar(props) {
           <Logo>PETFTY</Logo>
         </Link>
       </TopBarCenter>
-      {user ? (<TopBarRight>
-        Balance: {myBalance}
-      </TopBarRight>) : <TopBarRight></TopBarRight>}
-      
+      {user ? (
+        <>
+          <TopBarRight>Balance: {myBalance}</TopBarRight>
+          <Button onClick={() => {navigate("/myPage/"+user)}}>MY PAGE</Button>
+        </>
+      ) : (
+        <TopBarRight></TopBarRight>
+      )}
     </TopBarContainer>
   );
 }
