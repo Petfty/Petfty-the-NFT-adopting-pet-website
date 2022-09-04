@@ -18,7 +18,9 @@ const isOwnersToken = async (address, tokenId) => {
 }
 
 // get create token URL
-router.get("/createTokenURL", async (req, res) => {
+router.put("/createTokenURL", async (req, res) => {
+	console.log(req.body);
+
 	try {
 		// upload metadata
 		const metadataURL = await API.uploadMetaData(req.body, req.body.desc.name, req.body.img);
@@ -189,12 +191,12 @@ router.get("/info/all", async (req, res) => {
 })
 
 // get user's Token on Market
-router.get("/info/:walletAddress", async (req, res) => {
+router.put("/info/:walletAddress", async (req, res) => {
 	try {
 		const balance = await API.getBalance(req.body.walletAddress);
 		const currentUser = await User.findOne({walletAddress: req.params.walletAddress});
 		if (currentUser.walletAddress == req.body.walletAddress && balance > 0) {
-			const nfts = API.getNFTs(currentUser.walletAddress);
+			const nfts = await API.getNFTs(currentUser.walletAddress);
 			res.status(200).json(nfts);
 		} else {
 			res.status(403).json("you can access only your Token");

@@ -57,7 +57,7 @@ export default function Register(props) {
 		try {
 			const response = await axios.post("/auth/register", user);
 			console.log(response.data)
-			alert("Sign Up Successful");
+			alert("Sign Up Success");
 			navigate("/");
 		} catch (err) {
 			alert(err);

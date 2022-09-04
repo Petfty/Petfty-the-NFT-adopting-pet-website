@@ -75,12 +75,12 @@ const RegisterButton = styled(Link)`
 
 const DEFAULT_QR_CODE = "DEFAULT";
 
-export default function QR(props) {
+export default function Login(props) {
   const { setMyAddress, setBalance, setUser, user } = props;
   const [qrvalue, setQrvalue] = useState(DEFAULT_QR_CODE);
   const navigate = useNavigate();
 
-  const Login = (walletAddress, callback) => {
+  const LoginExecute = (walletAddress, callback) => {
     try {
       axios
         .post("/auth/login", { walletAddress: walletAddress })
@@ -162,7 +162,7 @@ export default function QR(props) {
             <LoginButton
               onClick={() => {
                 LoginQR((address) => {
-                  Login(address, (isRegistered) => {
+                  LoginExecute(address, (isRegistered) => {
                     if (isRegistered) {
                       alert("Login Successful");
                     } else {

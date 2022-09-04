@@ -1,8 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
-import { useNavigate } from "react-router"
-
+import { useNavigate } from "react-router";
 
 const TopBarContainer = styled.div`
   height: 80px;
@@ -80,7 +79,13 @@ export default function TopBar(props) {
       {user ? (
         <>
           <TopBarRight>Balance: {myBalance}</TopBarRight>
-          <Button onClick={() => {navigate("/myPage/"+user)}}>MY PAGE</Button>
+          <Button
+            onClick={() => {
+              navigate("/myPage/" + user);
+            }}
+          >
+            MY PAGE
+          </Button>
         </>
       ) : (
         <TopBarRight></TopBarRight>

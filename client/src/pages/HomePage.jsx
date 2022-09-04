@@ -1,7 +1,7 @@
 import { React } from "react";
 import styled from "styled-components";
 import TopBar from "../components/TopBar";
-import QR from "../components/QR";
+import Login from "../components/Login";
 import Tokens from "../components/Tokens";
 
 const HomePageContainer = styled.div`
@@ -18,7 +18,7 @@ export default function HomePage(props) {
     <>
       <TopBar myAddress={myAddress} myBalance={myBalance} user={user}/>
       <HomePageContainer>
-        <QR
+        <Login
           setMyAddress={setMyAddress}
           setBalance={setBalance}
           setUser={setUser}
