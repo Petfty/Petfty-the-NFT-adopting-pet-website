@@ -1,4 +1,6 @@
-import { React, useState, useEffect } from "react";
+import { React, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import QRCode from "qrcode.react";
 import styled from "styled-components";
 import {
   Alert,
@@ -33,26 +35,17 @@ const TokneListContainer = styled.div`
 `;
 
 const TokenUpdateButton = styled.button`
-	height: 50px;
-	border-radius: 10px;
-	border: none;
-	background-color: #898a8d;
-	color: white;
-	font-size: 20px;
-	font-weight: 500;
-	cursor: pointer;
+  height: 50px;
+  border-radius: 10px;
+  border: none;
+  background-color: #898a8d;
+  color: white;
+  font-size: 20px;
+  font-weight: 500;
+  cursor: pointer;
 `;
 
-const TokensLeft = styled.div`
-  flex: 5;
-  height: 200px;
-
-`;
-
-const TokensRight = styled.div`
-  flex: 5;
-  height: 200px;
-`;
+const DEFAULT_QR_CODE = "DEFAULT";
 
 export default function Tokens(props) {
   const {
@@ -63,23 +56,27 @@ export default function Tokens(props) {
     setShowModal,
     setModalProps,
   } = props;
+  const [qrvalue, setQrvalue] = useState(DEFAULT_QR_CODE);
   const [nfts, setNfts] = useState([]);
-  const [nftImages, setNftImages ] = useState([]);
+  const [nftImages, setNftImages] = useState([]);
+  const navigate = useNavigate();
   const rows = nfts.slice(nfts.length / 2);
 
   const onClickCard = (id) => {
-    if (isMarket === true) {
+    if (isMarket === false) {
       setModalProps({
         title: "NFT를 마켓에 올리겠어요?",
+        isConfirm: true,
         onConfirm: () => {
           onClickMyCard(id);
         },
       });
       setShowModal(true);
     }
-    if (isMarket === false) {
+    if (isMarket === true) {
       setModalProps({
         title: "NFT를 구매하시겠어요?",
+        isConfirm: true,
         onConfirm: () => {
           onClickMarkeCard(id);
         },
@@ -89,7 +86,47 @@ export default function Tokens(props) {
   };
 
   const onClickMyCard = (tokenId) => {
-    console.log("dd")
+    let request_key = null;
+    const cardInfo = {
+      isMobile: true,
+      fromAddress: Address,
+      tokenId: tokenId,
+    };
+    try {
+      axios.put("/tokens/saleTokenURL", cardInfo).then((res) => {
+        setQrvalue(res.data.url + res.data.request_key);
+        console.log(qrvalue);
+        setModalProps({
+          title: "KLIP앱을 열어 QR을 인증하세요",
+          isConfirm: false,
+          onConfirm: () => {
+            return (
+              <QRCode value={qrvalue} size={256} style={{ margin: "auto" }} />
+            );
+          },
+        });
+        setShowModal(true);
+        request_key = res.data.request_key;
+        let timeId = setInterval(() => {
+          axios
+            .get(
+              `https://a2a-api.klipwallet.com/v2/a2a/result?request_key=${request_key}`
+            )
+            .then((res) => {
+              if (res.data.result) {
+                console.log(`[result] ${JSON.stringify(res.data.result)}`);
+                clearInterval(timeId);
+                setQrvalue("DEFAULT");
+                alert("Token is On Market");
+                setShowModal(false);
+                navigate("/mypage/" + Address);
+              }
+            });
+        }, 1000);
+      });
+    } catch (err) {
+      console.log(err.response.data);
+    }
   };
 
   const onClickMarkeCard = (tokenId) => {
@@ -97,12 +134,14 @@ export default function Tokens(props) {
   };
 
   const getNfts = async () => {
-    const response = await axios.put("/tokens/info/"+Address, {
+    const response = await axios.put("/tokens/info/" + Address, {
       walletAddress: Address,
     });
-    if (response.data 
-    && Object.keys(response.data).length === 0
-    && Object.getPrototypeOf(response.data) === Object.prototype) {
+    if (
+      response.data &&
+      Object.keys(response.data).length === 0 &&
+      Object.getPrototypeOf(response.data) === Object.prototype
+    ) {
       // console.log("empty")
       setNfts([]);
       setNftImages([]);
@@ -114,34 +153,36 @@ export default function Tokens(props) {
 
   const getImage = async (uri) => {
     const response = await axios.get(uri);
-    await console.log(typeof(response));
-    return (await (response.data.image));
-  }
+    await console.log(typeof response);
+    return await response.data.image;
+  };
 
   const getInfo = (uri) => {
     for (let i = 0; i < uri.length; i++) {
       getImage(uri[i].uri).then((result) => {
-        setNftImages(current => [...current, result]);
+        setNftImages((current) => [...current, result]);
         console.log(nftImages);
       });
     }
-  }
+  };
 
   return (
     <TokenContainer>
-      <TokenUpdateButton onClick={getNfts}>
-        Update Tokens
-      </TokenUpdateButton>
+      <br />
+      <TokenUpdateButton onClick={getNfts}>Update Tokens</TokenUpdateButton>
       <TokneListContainer>
         {rows.map((o, rowIndex) => (
-          <Row key={rowIndex} >
+          <Row key={rowIndex}>
             <Col style={{ marginRight: 0, paddingRight: 0 }}>
               <Card
                 onClick={() => {
                   onClickCard(nfts[rowIndex * 2].id);
                 }}
               >
-                <Card.Img src={nftImages[rowIndex * 2]} style={{ height: "250px" }} />
+                <Card.Img
+                  src={nftImages[rowIndex * 2]}
+                  style={{ height: "250px" }}
+                />
               </Card>
               [{nfts[rowIndex * 2].id}]NFT
             </Col>
@@ -152,7 +193,10 @@ export default function Tokens(props) {
                     onClickCard(nfts[rowIndex * 2 + 1].id);
                   }}
                 >
-                  <Card.Img src={nftImages[rowIndex * 2 + 1] } style={{ height: "250px" }} />
+                  <Card.Img
+                    src={nftImages[rowIndex * 2 + 1]}
+                    style={{ height: "250px" }}
+                  />
                 </Card>
               ) : null}
               {nfts.length > rowIndex * 2 + 1 ? (

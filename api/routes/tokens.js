@@ -58,7 +58,7 @@ router.post("/createToken", async (req, res) => {
 });
 
 // get sale token URL
-router.get("/saleTokenURL", async (req, res) => {
+router.put("/saleTokenURL", async (req, res) => {
 	try {
 		// execute contract
 		const functionJson = '{ "constant": false, "inputs": [ { "name": "from", "type": "address" }, { "name": "to", "type": "address" }, { "name": "tokenId", "type": "uint256" } ], "name": "safeTransferFrom", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" }';
@@ -95,7 +95,7 @@ router.put("/saleToken/:tokenId", async (req, res) => {
 
 
 // get adopt token URL
-router.get("/purchaseTokenURL", async (req, res) => {
+router.put("/purchaseTokenURL", async (req, res) => {
 	try {
 		// execute contract
 		const functionJson = '{ "constant": false, "inputs": [ { "name": "tokenId", "type": "uint256" }, { "name": "NFTAddress", "type": "address" } ], "name": "buyNFT", "outputs": [ { "name": "", "type": "bool" } ], "payable": true, "stateMutability": "payable", "type": "function" }';
@@ -133,7 +133,7 @@ router.put("/purchaseToken/:tokenId", async (req, res) => {
 });
 
 // get burn a Token URL
-router.get("/burnTokenURL", async (req, res) => {
+router.put("/burnTokenURL", async (req, res) => {
 	try {
 		// check token is owner's
 		const isInclude = await isOwnersToken(req.body.walletAddress, req.body.tokenId);

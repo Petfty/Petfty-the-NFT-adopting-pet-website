@@ -2,6 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 import TopBar from '../components/TopBar';
 import Tokens from '../components/Tokens';
+import Modals from '../components/Modals';
 
 const MyPageContainer = styled.div`
   height: 100vh;
@@ -14,6 +15,7 @@ export default function MyPage(props) {
 
   return (
 	 <>
+    <Modals showModal={showModal} modalProps={modalProps} setShowModal={setShowModal} setModalProps={setModalProps}/>
     <TopBar myAddress={myAddress} myBalance={myBalance} user={user}>
     </TopBar>
     <MyPageContainer>
