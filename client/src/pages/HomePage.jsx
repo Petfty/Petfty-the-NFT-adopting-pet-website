@@ -3,6 +3,7 @@ import styled from "styled-components";
 import TopBar from "../components/TopBar";
 import Login from "../components/Login";
 import Tokens from "../components/Tokens";
+import Modals from "../components/Modals";
 
 const HomePageContainer = styled.div`
   height: 100vh;
@@ -11,12 +12,29 @@ const HomePageContainer = styled.div`
 `;
 
 export default function HomePage(props) {
-  const { myAddress, myBalance, user, setMyAddress, setBalance, setUser } =
-    props;
+  const {
+    myAddress,
+    myBalance,
+    user,
+    setMyAddress,
+    setBalance,
+    setUser,
+    showModal,
+    modalProps,
+    setShowModal,
+    setModalProps,
+  } = props;
 
   return (
     <>
-      <TopBar myAddress={myAddress} myBalance={myBalance} user={user}/>
+      <Modals
+        showModal={showModal}
+        modalProps={modalProps}
+        setShowModal={setShowModal}
+        setModalProps={setModalProps}
+      />
+
+      <TopBar myAddress={myAddress} myBalance={myBalance} user={user} />
       <HomePageContainer>
         <Login
           setMyAddress={setMyAddress}
@@ -24,7 +42,15 @@ export default function HomePage(props) {
           setUser={setUser}
           user={user}
         />
-        <Tokens />
+        <Tokens
+          isMarket={true}
+          Address={myAddress}
+          showModal={showModal}
+          modalProps={modalProps}
+          setShowModal={setShowModal}
+          setModalProps={setModalProps}
+          user={user}
+        ></Tokens>
       </HomePageContainer>
     </>
   );

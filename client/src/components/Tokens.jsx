@@ -55,8 +55,8 @@ export default function Tokens(props) {
     modalProps,
     setShowModal,
     setModalProps,
+    user,
   } = props;
-  const [qrvalue, setQrvalue] = useState(DEFAULT_QR_CODE);
   const [nfts, setNfts] = useState([]);
   const [nftImages, setNftImages] = useState([]);
   const navigate = useNavigate();
@@ -74,34 +74,45 @@ export default function Tokens(props) {
       setShowModal(true);
     }
     if (isMarket === true) {
-      setModalProps({
-        title: "NFT를 구매하시겠어요?",
-        isConfirm: true,
-        onConfirm: () => {
-          onClickMarkeCard(id);
-        },
-      });
-      setShowModal(true);
+      if (user === Address) {
+        setModalProps({
+          title: "NFT를 구매하시겠어요?",
+          isConfirm: true,
+          onConfirm: () => {
+            onClickMarkeCard(id);
+          },
+        });
+        setShowModal(true);
+      } else {
+        setModalProps({
+          title: "Login Needed",
+          isConfirm: true,
+          onConfirm: () => {
+            navigate("/");
+          },
+        });
+        setShowModal(true);
+      }
     }
   };
 
   const onClickMyCard = (tokenId) => {
     let request_key = null;
     const cardInfo = {
-      isMobile: true,
+      isMobile: false,
       fromAddress: Address,
       tokenId: tokenId,
     };
     try {
       axios.put("/tokens/saleTokenURL", cardInfo).then((res) => {
-        setQrvalue(res.data.url + res.data.request_key);
-        console.log(qrvalue);
+        const qvalue = res.data.url + res.data.request_key;
+        console.log(qvalue);
         setModalProps({
           title: "KLIP앱을 열어 QR을 인증하세요",
           isConfirm: false,
           onConfirm: () => {
             return (
-              <QRCode value={qrvalue} size={256} style={{ margin: "auto" }} />
+              <QRCode value={qvalue} size={256} style={{ margin: "auto" }} />
             );
           },
         });
@@ -116,7 +127,6 @@ export default function Tokens(props) {
               if (res.data.result) {
                 console.log(`[result] ${JSON.stringify(res.data.result)}`);
                 clearInterval(timeId);
-                setQrvalue("DEFAULT");
                 alert("Token is On Market");
                 setShowModal(false);
                 navigate("/mypage/" + Address);
@@ -130,24 +140,77 @@ export default function Tokens(props) {
   };
 
   const onClickMarkeCard = (tokenId) => {
-    console.log("aa");
+    let request_key = null;
+    const cardInfo = {
+      tokenId: tokenId,
+    };
+    try {
+      axios.put("/tokens/purchaseTokenURL", cardInfo).then((res) => {
+        const qvalue = res.data.url + res.data.request_key;
+        console.log(qvalue);
+        setModalProps({
+          title: "KLIP앱을 열어 QR을 인증하세요",
+          isConfirm: false,
+          onConfirm: () => {
+            return (
+              <QRCode value={qvalue} size={256} style={{ margin: "auto" }} />
+            );
+          },
+        });
+        setShowModal(true);
+        request_key = res.data.request_key;
+        let timeId = setInterval(() => {
+          axios
+            .get(
+              `https://a2a-api.klipwallet.com/v2/a2a/result?request_key=${request_key}`
+            )
+            .then((res) => {
+              if (res.data.result) {
+                console.log(`[result] ${JSON.stringify(res.data.result)}`);
+                clearInterval(timeId);
+                alert("Buy contract successful");
+                setShowModal(false);
+                navigate("/");
+              }
+            });
+        }, 1000);
+      });
+    } catch (err) {
+      console.log(err.response.data);
+    }
   };
 
   const getNfts = async () => {
-    const response = await axios.put("/tokens/info/" + Address, {
-      walletAddress: Address,
-    });
-    if (
-      response.data &&
-      Object.keys(response.data).length === 0 &&
-      Object.getPrototypeOf(response.data) === Object.prototype
-    ) {
-      // console.log("empty")
-      setNfts([]);
-      setNftImages([]);
+    if (isMarket === true) {
+      const response = await axios.get("/tokens/info/all");
+      if (
+        response.data &&
+        Object.keys(response.data).length === 0 &&
+        Object.getPrototypeOf(response.data) === Object.prototype
+      ) {
+        // console.log("empty")
+        setNfts([]);
+        setNftImages([]);
+      } else {
+        setNfts(response.data);
+        getInfo(response.data);
+      }
     } else {
-      setNfts(response.data);
-      getInfo(response.data);
+      const response = await axios.put("/tokens/info/" + Address, {
+        walletAddress: Address,
+      });
+      if (
+        response.data &&
+        Object.keys(response.data).length === 0 &&
+        Object.getPrototypeOf(response.data) === Object.prototype
+      ) {
+        // console.log("empty")
+        setNfts([]);
+        setNftImages([]);
+      } else {
+        setNfts(response.data);
+        getInfo(response.data);
+      }
     }
   };
 

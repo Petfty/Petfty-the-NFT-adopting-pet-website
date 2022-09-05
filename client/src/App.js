@@ -30,6 +30,10 @@ function App() {
                 setMyAddress={setMyAddress}
                 setBalance={setBalance}
                 setUser={setUser}
+                showModal={showModal}
+                modalProps={modalProps}
+                setShowModal={setShowModal}
+                setModalProps={setModalProps}
               />
             }
           />
